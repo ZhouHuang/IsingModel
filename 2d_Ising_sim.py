@@ -20,6 +20,7 @@ class twoDIsing():
     _T = 100         # system temperature, unit Kelvin
     _ENERGY = 0      # system energy
     _ENERGYVAR = 0   # system energy variance
+    _FIELDENERGY = 0 # field energy
     _MAGINTENSITY = 0      # system magnetic intensity
     _MAGINTENSITYVAR = 0   # system magnetic intensity variance
     _KBOLTZMANN = 1  # boltzmann constant
@@ -41,8 +42,8 @@ class twoDIsing():
         self._ENERGY = 0
         for x in range(self._XMAX):
             for y in range(self._YMAX):
-                energy += self._calculateAdjacentEnergy(x,y)
-        self._ENERGY = self._ENERGY/2
+                self._ENERGY += self._calculateAdjacentEnergy(x,y)
+        self._ENERGY = self._ENERGY/(self._XMAX * self._YMAX)
         print('Total Energy = ',self._ENERGY)
         return self._ENERGY
     
@@ -65,12 +66,18 @@ class twoDIsing():
                              cos(self._STATE[bottom[0],bottom[1]])*cos(self._STATE[x,y]) +\
                              cos(self._STATE[left[0],left[1]])*cos(self._STATE[x,y]) + \
                              cos(self._STATE[right[0],right[1]])*cos(self._STATE[x,y]) )
+        epsilon = epsilon/2
         print('neighboring energy = ',epsilon)
         return epsilon
 
 
     def _calculateFieldEnergy(self):
-        pass
+        self._FIELDENERGY = 0
+        for x in range(self._XMAX):
+            for y in range(self._YMAX):
+                self._FIELDENERGY += -1 * self._MU * self._H * cos(self._STATE[x,y])
+        print('field energy = ',self._FIELDENERGY)
+        return self._FIELDENERGY
     
     def _calculateMagneticIntensity(self):
         pass
@@ -97,6 +104,7 @@ class twoDIsing():
     def simulate(self):
         for i in range(self._MCTIME):
             self._randomFlip(np.pi)
+        self._calculateTotalEnergy()
     
 def main():
     ising = twoDIsing()
