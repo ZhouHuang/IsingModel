@@ -5,15 +5,16 @@ Created on Sat Apr 11 13:56:58 2020
 2D Ising model simulation
 """
 import numpy as np
-from numpy import random, mat, array
+from numpy import random, mat, array, cos, sin
 
 class twoDIsing():
     # parameters definition
-    _RAW = 10
-    _COLUMN = 10     # the size of the interaction plane
+    _XMAX = 3     # Y coordinate
+    _YMAX = 10     # X coordinate 
+                  # note that X Y are on commen sense which equles the matrix element mat[x,y]
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
     _J = -1          # J = -1 ferromagnetizem J = 1 antiferromagnetizem
-    _MCTIME = 4       # total simulation times
+    _MCTIME = 2       # total simulation times
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
     _T = 100         # system temperature, unit Kelvin
@@ -31,12 +32,12 @@ class twoDIsing():
             print('USAGE:')
             return None
         elif len(args) == 0:
-            self._STATE = mat([[2*np.pi for i in range(self._RAW)] for ii in range(self._COLUMN)])
+            self._STATE = mat([[2*np.pi for i in range(self._XMAX)] for ii in range(self._YMAX)])
             #_STATE = 2*random.randint(2, size=(N,N))-1 # random spin 
         elif len(args) == 1:
             print('args == 1')
         
-    def calculateTotalEnergy(self):
+    def _calculateTotalEnergy(self):
         pass
     
     def getTotalEnergy(self):
@@ -45,13 +46,27 @@ class twoDIsing():
     def getTotalEnergyVariance(self):
         return self._ENERGYVAR
     
-    def calculateAdjacentEnergy(self):
-        pass
+    def _calculateAdjacentEnergy(self,x,y):
+        x = x % self._YMAX
+        y = y % self._XMAX
+        top = [x, y - 1 if y>0 else self._XMAX - 1]
+        bottom = [x, y + 1 if y < self._XMAX - 1 else 0]
+        left = [x - 1 if x>0 else self._YMAX - 1 , y]
+        right = [x + 1 if x < self._YMAX - 1 else 0 , y]
+        # energy between adjacent sites
+        #epsilon = sum{ sigma_xy * sigma_j }, j are neighboring
+        epsilon = self._J * (cos(self._STATE[top[0],top[1]])*cos(self._STATE[x,y]) + \
+                             cos(self._STATE[bottom[0],bottom[1]])*cos(self._STATE[x,y]) +\
+                             cos(self._STATE[left[0],left[1]])*cos(self._STATE[x,y]) + \
+                             cos(self._STATE[right[0],right[1]])*cos(self._STATE[x,y]) )
+        print('neighboring energy = ',epsilon)
+        return epsilon
 
-    def calculateFieldEnergy(self):
+
+    def _calculateFieldEnergy(self):
         pass
     
-    def calculateMagneticIntensity(self):
+    def _calculateMagneticIntensity(self):
         pass
     
     def getMagneticIntensity(self):
@@ -61,21 +76,21 @@ class twoDIsing():
         return self._MAGINTENSITYVAR
     
     def _randomFlip(self,*angle): # rotate angle, default is pi, unit rad
-        raw = random.randint(self._RAW)
-        column = random.randint(self._COLUMN)
-        print(raw,column,angle)
-        self._STATE[raw,column] = (self._STATE[raw,column] + np.pi) % (2*np.pi) # up-down flip
-        #self._STATE[raw,column] = (self._STATE[raw,column] + angle) % (2*np.pi) # certain angle flip
-        return (raw,column)
+        y = random.randint(self._XMAX)
+        x = random.randint(self._YMAX)
+        print('site{} flipping{}'.format((x,y),angle))
+        #self._STATE[x,y] = (self._STATE[x,y] + np.pi) % (2*np.pi) # up-down flip
+        self._STATE[x,y] = (self._STATE[x,y] + angle) % (2*np.pi) # certain angle flip
+        return (x,y)
 
     def visulizeSpin(self):
-        VS = mat([[self.__LABEL[np.cos(self._STATE[r,c])] \
-                           for r in range(self._RAW) ] for c in range(self._COLUMN)] )
+        VS = mat([[self.__LABEL[cos(self._STATE[x,y])] \
+                           for x in range(self._YMAX) ] for y in range(self._XMAX)] )
         print(VS)
         
     def simulate(self):
         for i in range(self._MCTIME):
-            self._randomFlip()
+            self._randomFlip(np.pi)
     
 def main():
     ising = twoDIsing()
