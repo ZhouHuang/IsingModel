@@ -9,8 +9,8 @@ from numpy import random, mat, array, cos, sin
 
 class twoDIsing():
     # parameters definition
-    _XMAX = 3     # Y coordinate
-    _YMAX = 10     # X coordinate 
+    _XMAX = 3     # X coordinate
+    _YMAX = 10    # Y coordinate 
                   # note that X Y are on commen sense which equles the matrix element mat[x,y]
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
     _J = -1          # J = -1 ferromagnetizem J = 1 antiferromagnetizem
@@ -32,13 +32,19 @@ class twoDIsing():
             print('USAGE:')
             return None
         elif len(args) == 0:
-            self._STATE = mat([[2*np.pi for i in range(self._XMAX)] for ii in range(self._YMAX)])
+            self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
             #_STATE = 2*random.randint(2, size=(N,N))-1 # random spin 
         elif len(args) == 1:
             print('args == 1')
         
     def _calculateTotalEnergy(self):
-        pass
+        self._ENERGY = 0
+        for x in range(self._XMAX):
+            for y in range(self._YMAX):
+                energy += self._calculateAdjacentEnergy(x,y)
+        self._ENERGY = self._ENERGY/2
+        print('Total Energy = ',self._ENERGY)
+        return self._ENERGY
     
     def getTotalEnergy(self):
         return self._ENERGY
@@ -47,12 +53,12 @@ class twoDIsing():
         return self._ENERGYVAR
     
     def _calculateAdjacentEnergy(self,x,y):
-        x = x % self._YMAX
-        y = y % self._XMAX
-        top = [x, y - 1 if y>0 else self._XMAX - 1]
-        bottom = [x, y + 1 if y < self._XMAX - 1 else 0]
-        left = [x - 1 if x>0 else self._YMAX - 1 , y]
-        right = [x + 1 if x < self._YMAX - 1 else 0 , y]
+        x = x % self._XMAX
+        y = y % self._YMAX
+        top = [x, y - 1 if y>0 else self._YMAX - 1]
+        bottom = [x, y + 1 if y < self._YMAX - 1 else 0]
+        left = [x - 1 if x>0 else self._XMAX - 1 , y]
+        right = [x + 1 if x < self._XMAX - 1 else 0 , y]
         # energy between adjacent sites
         #epsilon = sum{ sigma_xy * sigma_j }, j are neighboring
         epsilon = self._J * (cos(self._STATE[top[0],top[1]])*cos(self._STATE[x,y]) + \
@@ -76,8 +82,8 @@ class twoDIsing():
         return self._MAGINTENSITYVAR
     
     def _randomFlip(self,*angle): # rotate angle, default is pi, unit rad
-        y = random.randint(self._XMAX)
-        x = random.randint(self._YMAX)
+        y = random.randint(self._YMAX)
+        x = random.randint(self._XMAX)
         print('site{} flipping{}'.format((x,y),angle))
         #self._STATE[x,y] = (self._STATE[x,y] + np.pi) % (2*np.pi) # up-down flip
         self._STATE[x,y] = (self._STATE[x,y] + angle) % (2*np.pi) # certain angle flip
@@ -85,7 +91,7 @@ class twoDIsing():
 
     def visulizeSpin(self):
         VS = mat([[self.__LABEL[cos(self._STATE[x,y])] \
-                           for x in range(self._YMAX) ] for y in range(self._XMAX)] )
+                           for x in range(self._XMAX) ] for y in range(self._YMAX)] )
         print(VS)
         
     def simulate(self):
