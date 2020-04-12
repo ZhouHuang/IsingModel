@@ -39,22 +39,18 @@ class twoDIsing():
             return None
         elif len(kw) == 0:
             self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+            self._T = 1
         else:
             for k in kw:
-                if k!='type':
-                    print('initialing type ERROR! default type is all alined up')
-                    print('USAGE:[type=default,up,down,random]')
-                    return None
-                elif kw[k]=='down':
-                    self._STATE = mat([[np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
-                elif kw[k]=='up' or kw[k]=='default':
-                    self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
-                elif kw[k]=='random':
-                    self._STATE = mat( np.pi*random.randint(2, size=(self._XMAX,self._YMAX)))
-                else:
-                    print('initialing type ERROR! default type is all alined up')
-                    print('USAGE:')
-                    return None
+                if k=='type':
+                    if kw[k]=='down':
+                        self._STATE = mat([[np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                    elif kw[k]=='up' or kw[k]=='default':
+                        self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                    elif kw[k]=='random':
+                        self._STATE = mat( np.pi*random.randint(2, size=(self._XMAX,self._YMAX)))
+                    else:
+                        pass
     
     def getMCTime(self):
         return self._MCTIME
@@ -167,7 +163,7 @@ class twoDIsing():
             self._MAGINTENSITYVARARRAY.append(self._MAGINTENSITYVAR)
     
 def main():
-    ising = twoDIsing(type='random')
+    ising = twoDIsing(type='down')
     
     ising.visulizeSpin()
     ising.simulate()
