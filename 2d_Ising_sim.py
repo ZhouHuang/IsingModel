@@ -10,15 +10,15 @@ from numpy import random, mat, cos
 
 class twoDIsing():
     # parameters definition
-    _XMAX = 4     # X coordinate
-    _YMAX = 4    # Y coordinate 
+    _XMAX = 8     # X coordinate
+    _YMAX = 8    # Y coordinate 
                   # note that X Y are on commen sense which equles the matrix element mat[x,y]
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
     _J = -1          # J = -1 ferromagnetizem J = 1 antiferromagnetizem
-    _MCTIME = 40       # total simulation times
+    _MCTIME = 200       # total simulation times
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
-    _T = 0.2         # system temperature, unit Kelvin
+    _T = 0.1         # system temperature, unit Kelvin
     _KBOLTZMANN = 1  # boltzmann constant
     _ENERGY = 0      # system energy
     _ENERGYVAR = 0   # system energy variance
@@ -32,16 +32,29 @@ class twoDIsing():
     
     __LABEL = {-1:'O', 1:'X'} # visulize spin
     
-    def __init__(self,*args):
-        if len(args) >= 2:
-            print('initialing type ERROR! default type is all alined')
-            print('USAGE:')
+    def __init__(self,**kw):
+        if len(kw) >= 2:
+            print('initialing type ERROR! default type is all alined up')
+            print('USAGE:[type=default,up,down,random]')
             return None
-        elif len(args) == 0:
+        elif len(kw) == 0:
             self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
-            #_STATE = 2*random.randint(2, size=(N,N))-1 # random spin 
-        elif len(args) == 1:
-            print('args == 1')
+        else:
+            for k in kw:
+                if k!='type':
+                    print('initialing type ERROR! default type is all alined up')
+                    print('USAGE:[type=default,up,down,random]')
+                    return None
+                elif kw[k]=='down':
+                    self._STATE = mat([[np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                elif kw[k]=='up' or kw[k]=='default':
+                    self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                elif kw[k]=='random':
+                    self._STATE = mat( np.pi*random.randint(2, size=(self._XMAX,self._YMAX)))
+                else:
+                    print('initialing type ERROR! default type is all alined up')
+                    print('USAGE:')
+                    return None
     
     def getMCTime(self):
         return self._MCTIME
@@ -72,6 +85,7 @@ class twoDIsing():
     def _calculateLocalEnergy(self,x,y):
         # energy between adjacent sites
         # epsilon = sum{ sigma_xy * sigma_j }, j are neighboring
+        epsilon = 0
         x = x % self._XMAX
         y = y % self._YMAX
         top = [x, y - 1 if y>0 else self._YMAX - 1]
@@ -94,6 +108,8 @@ class twoDIsing():
         #print('field energy = ',self._FIELDENERGY)
     
     def _calculateMagneticIntensity(self):
+        self._MAGINTENSITY = 0
+        self._MAGINTENSITYVAR = 0
         for x in range(self._XMAX):
             for y in range(self._YMAX):
                 self._MAGINTENSITY += cos(self._STATE[x,y]) 
@@ -119,7 +135,7 @@ class twoDIsing():
                            for x in range(self._XMAX) ] for y in range(self._YMAX)] )
         print(VS)
         
-    def simulate(self):
+    def simulate(self,**kw):
         self._calculateTotalEnergy()
         self._calculateMagneticIntensity()
         self._ENERGYARRAY.append(self._ENERGY)
@@ -151,7 +167,7 @@ class twoDIsing():
             self._MAGINTENSITYVARARRAY.append(self._MAGINTENSITYVAR)
     
 def main():
-    ising = twoDIsing()
+    ising = twoDIsing(type='random')
     
     ising.visulizeSpin()
     ising.simulate()
@@ -161,14 +177,28 @@ def main():
     magnetTensityVar = ising.getMagneticIntensityVariance()
     energyVar = ising.getTotalEnergyVariance()
     
-    x = np.linspace(0, ising.getMCTime()+1,ising.getMCTime()+1)
-
-
-    fig, (ax1, ax2) = plt.subplots(2,1,sharex=False,figsize=[6,10])
-
-    ax1.errorbar(x=x,y=energy,yerr=energyVar,fmt='o',ecolor='r',color='b')
+    # smooth sample plot
+    energy = energy[::int(0.01*len(energy))]
+    energyVar = energyVar[::int(0.01*len(energyVar))]
+    magnetTensity = magnetTensity[::int(0.01*len(magnetTensity))]
+    magnetTensityVar = magnetTensityVar[::int(0.01*len(magnetTensityVar))]
+    x = np.linspace(0,len(energy),len(energy))
     
+    fig, (ax1, ax2) = plt.subplots(2,1,sharex=False,figsize=[6,10])
+    ax1.errorbar(x=x,y=energy,yerr=energyVar,fmt='o',ecolor='r',color='b')
+    ax1.set_title('energy evolution')
     ax2.errorbar(x=x,y=magnetTensity,yerr=magnetTensityVar,fmt='o',ecolor='r',color='b')
+    ax2.set_title('magnetic momentum evolution')
+
+    
+    '''#detail plot
+    x = np.linspace(0, ising.getMCTime()+1,ising.getMCTime()+1)
+    fig, (ax1, ax2) = plt.subplots(2,1,sharex=False,figsize=[6,10])
+    ax1.errorbar(x=x,y=energy,yerr=energyVar,fmt='o',ecolor='r',color='b')
+    ax1.set_title('energy evolution')
+    ax2.errorbar(x=x,y=magnetTensity,yerr=magnetTensityVar,fmt='o',ecolor='r',color='b')
+    ax2.set_title('magnetic momentum evolution')
+    '''
 
 
 if __name__ == '__main__':
