@@ -4,6 +4,7 @@ Created on Sat Apr 11 13:56:58 2020
 @author: huangzhou
 2D Ising model simulation
 """
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy import random, mat, cos
 
@@ -18,12 +19,16 @@ class twoDIsing():
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
     _T = 0.2         # system temperature, unit Kelvin
+    _KBOLTZMANN = 1  # boltzmann constant
     _ENERGY = 0      # system energy
     _ENERGYVAR = 0   # system energy variance
     _FIELDENERGY = 0 # field energy
     _MAGINTENSITY = 0      # system magnetic intensity
     _MAGINTENSITYVAR = 0   # system magnetic intensity variance
-    _KBOLTZMANN = 1  # boltzmann constant
+    _ENERGYARRAY = []      # store the energy values
+    _ENERGYVARARRAY = []
+    _MAGINTENSITYARRAY = []
+    _MAGINTENSITYVARARRAY = []
     
     __LABEL = {-1:'O', 1:'X'} # visulize spin
     
@@ -37,6 +42,11 @@ class twoDIsing():
             #_STATE = 2*random.randint(2, size=(N,N))-1 # random spin 
         elif len(args) == 1:
             print('args == 1')
+    
+    def getMCTime(self):
+        return self._MCTIME
+    def getSize(self):
+        return (self._XMAX,self._YMAX)
         
     def _calculateTotalEnergy(self):
         self._ENERGY = 0
@@ -44,6 +54,8 @@ class twoDIsing():
         for x in range(self._XMAX):
             for y in range(self._YMAX):
                 self._ENERGY += self._calculateLocalEnergy(x,y)
+        self._calculateFieldEnergy()
+        self._ENERGY += self._FIELDENERGY
         self._ENERGY = self._ENERGY/(self._XMAX * self._YMAX)
         #print('Total Energy = ',self._ENERGY)
         for x in range(self._XMAX):
@@ -52,10 +64,10 @@ class twoDIsing():
         self._ENERGYVAR = self._ENERGYVAR / (self._XMAX * self._YMAX)
     
     def getTotalEnergy(self):
-        return self._ENERGY
+        return self._ENERGYARRAY
     
     def getTotalEnergyVariance(self):
-        return self._ENERGYVAR
+        return self._ENERGYVARARRAY
     
     def _calculateLocalEnergy(self,x,y):
         # energy between adjacent sites
@@ -79,7 +91,7 @@ class twoDIsing():
         for x in range(self._XMAX):
             for y in range(self._YMAX):
                 self._FIELDENERGY += -1 * self._MU * self._H * cos(self._STATE[x,y])
-        print('field energy = ',self._FIELDENERGY)
+        #print('field energy = ',self._FIELDENERGY)
     
     def _calculateMagneticIntensity(self):
         for x in range(self._XMAX):
@@ -92,10 +104,10 @@ class twoDIsing():
         self._MAGINTENSITYVAR = self._MAGINTENSITYVAR / (self._XMAX * self._YMAX)
     
     def getMagneticIntensity(self):
-        return self._MAGINTENSITY
+        return self._MAGINTENSITYARRAY
     
     def getMagneticIntensityVariance(self):
-        return self._MAGINTENSITYVAR
+        return self._MAGINTENSITYVARARRAY
     
     def _flip(self,x,y,*angle):
         #self._STATE[x,y] = (self._STATE[x,y] + np.pi) % (2*np.pi) # up-down flip
@@ -108,6 +120,12 @@ class twoDIsing():
         print(VS)
         
     def simulate(self):
+        self._calculateTotalEnergy()
+        self._calculateMagneticIntensity()
+        self._ENERGYARRAY.append(self._ENERGY)
+        self._ENERGYVARARRAY.append(self._ENERGYVAR)
+        self._MAGINTENSITYARRAY.append(self._MAGINTENSITY)
+        self._MAGINTENSITYVARARRAY.append(self._MAGINTENSITYVAR)
         for i in range(self._MCTIME):
             y = random.randint(self._YMAX)
             x = random.randint(self._XMAX)
@@ -120,12 +138,17 @@ class twoDIsing():
             E_after = self._ENERGY
             print('E_before = ',E_before,'E_after = ',E_after)
             if E_after < E_before :
-                print('-'*8,'site{} flipping'.format((x,y)))
+                print('^'*8,'site{} flipping'.format((x,y)))
             elif random.uniform(0.0,1.0) <= np.exp(-(E_after-E_before)/(self._KBOLTZMANN * self._T)):
-                print('-'*8,'site{} flipping'.format((x,y)))
+                print('^'*8,'site{} flipping'.format((x,y)))
             else:
                 print('-'*8,'site{} holds'.format((x,y)))
                 self._flip(x,y,-angle)
+            self._calculateMagneticIntensity()
+            self._ENERGYARRAY.append(self._ENERGY)
+            self._ENERGYVARARRAY.append(self._ENERGYVAR)
+            self._MAGINTENSITYARRAY.append(self._MAGINTENSITY)
+            self._MAGINTENSITYVARARRAY.append(self._MAGINTENSITYVAR)
     
 def main():
     ising = twoDIsing()
@@ -133,9 +156,20 @@ def main():
     ising.visulizeSpin()
     ising.simulate()
     ising.visulizeSpin()
+    magnetTensity = ising.getMagneticIntensity()
+    energy = ising.getTotalEnergy()
+    magnetTensityVar = ising.getMagneticIntensityVariance()
+    energyVar = ising.getTotalEnergyVariance()
     
-    def plot():
-        pass
-        
+    x = np.linspace(0, ising.getMCTime()+1,ising.getMCTime()+1)
+
+
+    fig, (ax1, ax2) = plt.subplots(2,1,sharex=False,figsize=[6,10])
+
+    ax1.errorbar(x=x,y=energy,yerr=energyVar,fmt='o',ecolor='r',color='b')
+    
+    ax2.errorbar(x=x,y=magnetTensity,yerr=magnetTensityVar,fmt='o',ecolor='r',color='b')
+
+
 if __name__ == '__main__':
     main()
