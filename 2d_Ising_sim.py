@@ -88,7 +88,7 @@ class twoDIsing():
         bottom = [x, y + 1 if y < self._YMAX - 1 else 0]
         left = [x - 1 if x>0 else self._XMAX - 1 , y]
         right = [x + 1 if x < self._XMAX - 1 else 0 , y]
-        epsilon = self._J * (cos(self._STATE[top[0],top[1]])*cos(self._STATE[x,y]) + \
+        epsilon = -1*self._J * (cos(self._STATE[top[0],top[1]])*cos(self._STATE[x,y]) + \
                              cos(self._STATE[bottom[0],bottom[1]])*cos(self._STATE[x,y]) +\
                              cos(self._STATE[left[0],left[1]])*cos(self._STATE[x,y]) + \
                              cos(self._STATE[right[0],right[1]])*cos(self._STATE[x,y]) )
