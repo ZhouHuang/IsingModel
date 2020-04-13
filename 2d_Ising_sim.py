@@ -16,8 +16,9 @@ class twoDIsing():
     _YMAX = 8    # Y coordinate 
                   # note that X Y are on commen sense which equles the matrix element mat[x,y]
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
+    __DISTRIBUTION = None # state distribution
     _J = -1          # J = -1 ferromagnetizem J = 1 antiferromagnetizem
-    _MCTIME = 200       # total simulation times
+    _MCTIME =5       # total simulation times
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
     _T = 0.00000001         # system temperature, unit Kelvin
@@ -34,25 +35,63 @@ class twoDIsing():
     
     __LABEL = {-1:'O', 1:'X'} # visulize spin
     
-    def __init__(self,**kw):
-        if len(kw) >= 2:
-            print('initialing type ERROR! default type is all alined up')
-            print('USAGE:[type=default,up,down,random]')
-            return None
-        elif len(kw) == 0:
-            self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
-            self._T = 1
-        else:
-            for k in kw:
-                if k=='type':
+    def __init__(self,**kw):        
+        try:
+            if len(kw)==0:
+                self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                self._T = 1
+                self.__DISTRIBUTION = 'up'
+            elif len(kw)>2 :
+                raise TypeError
+            elif len(kw)==2:
+                for k in kw:
+                    if k not in ['distribution','temperature']:
+                        raise TypeError
+                    elif k=='distribution':
+                        if kw[k]=='down':
+                            self.__DISTRIBUTION = 'down'
+                            self._STATE = mat([[np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                        elif kw[k]=='up' or kw[k]=='default':
+                            self.__DISTRIBUTION = 'up'
+                            self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                        elif kw[k]=='random':
+                            self.__DISTRIBUTION = 'random'
+                            self._STATE = mat( np.pi*random.randint(2, size=(self._XMAX,self._YMAX)))
+                        else:
+                            raise ValueError
+                    else :
+                        if kw[k] > 0:
+                            self._T = kw[k]
+                        else:
+                            raise ValueError
+            else:
+                k = list(kw.keys())[0]
+                if k not in ['distribution','temperature']:
+                    raise TypeError
+                elif k=='distribution':
+                    self._T = 1
                     if kw[k]=='down':
+                        self.__DISTRIBUTION = 'down'
                         self._STATE = mat([[np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
                     elif kw[k]=='up' or kw[k]=='default':
+                        self.__DISTRIBUTION = 'up'
                         self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
                     elif kw[k]=='random':
+                        self.__DISTRIBUTION = 'random'
                         self._STATE = mat( np.pi*random.randint(2, size=(self._XMAX,self._YMAX)))
                     else:
-                        pass
+                        raise ValueError
+                else :
+                    if kw[k] > 0:
+                        self._T = kw[k]
+                        self.__DISTRIBUTION = 'up'
+                        self._STATE = mat([[2*np.pi for i in range(self._YMAX)] for ii in range(self._XMAX)])
+                    else:
+                        raise ValueError
+        finally:
+            print('initializing','-'*10)
+            print('distribution =',self.__DISTRIBUTION,'temperature =',self._T)
+    
     
     def getMCTime(self):
         return self._MCTIME
@@ -165,8 +204,8 @@ class twoDIsing():
             self._MAGINTENSITYVARARRAY.append(self._MAGINTENSITYVAR)
     
 def main():
-    ising = twoDIsing(type='random')
-    
+    #ising = twoDIsing(distribution='random',temperature=1)
+    ising = twoDIsing(temperature=0.01)
     ising.visulizeSpin()
     ising.simulate()
     ising.visulizeSpin()
@@ -176,10 +215,10 @@ def main():
     energyVar = ising.getTotalEnergyVariance()
     
     # smooth sample plot
-    energy = energy[::int(0.01*len(energy))]
-    energyVar = energyVar[::int(0.01*len(energyVar))]
-    magnetTensity = magnetTensity[::int(0.01*len(magnetTensity))]
-    magnetTensityVar = magnetTensityVar[::int(0.01*len(magnetTensityVar))]
+    energy = energy[::int(0.01*len(energy)) if 0.01*len(energy)>=1 else 1]
+    energyVar = energyVar[::int(0.01*len(energyVar)) if 0.01*len(energyVar)>=1 else 1]
+    magnetTensity = magnetTensity[::int(0.01*len(magnetTensity)) if 0.01*len(magnetTensity)>=1 else 1]
+    magnetTensityVar = magnetTensityVar[::int(0.01*len(magnetTensityVar)) if 0.01*len(magnetTensityVar)>=1 else 1]
     x = np.linspace(0,len(energy),len(energy))
     
     fig, (ax1, ax2) = plt.subplots(2,1,sharex=False,figsize=[6,10])
