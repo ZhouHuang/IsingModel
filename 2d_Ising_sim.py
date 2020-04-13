@@ -17,10 +17,10 @@ class twoDIsing():
                   # note that X Y are on commen sense which equles the matrix element mat[x,y]
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
     _J = -1          # J = -1 ferromagnetizem J = 1 antiferromagnetizem
-    _MCTIME = 100       # total simulation times
+    _MCTIME = 200       # total simulation times
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
-    _T = 0.1         # system temperature, unit Kelvin
+    _T = 0.00000001         # system temperature, unit Kelvin
     _KBOLTZMANN = 1  # boltzmann constant
     _ENERGY = 0      # system energy
     _ENERGYVAR = 0   # system energy variance
@@ -165,7 +165,7 @@ class twoDIsing():
             self._MAGINTENSITYVARARRAY.append(self._MAGINTENSITYVAR)
     
 def main():
-    ising = twoDIsing(type='down')
+    ising = twoDIsing(type='random')
     
     ising.visulizeSpin()
     ising.simulate()
@@ -197,7 +197,7 @@ def main():
     ax2.errorbar(x=x,y=magnetTensity,yerr=magnetTensityVar,fmt='o',ecolor='r',color='b')
     ax2.set_title('magnetic momentum evolution')
     '''
-    fig.savefig('./ising.png')
+    fig.savefig('../results/ising.png')
 
 if __name__ == '__main__':
     main()
