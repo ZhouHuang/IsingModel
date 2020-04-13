@@ -4,6 +4,8 @@ Created on Sat Apr 11 13:56:58 2020
 @author: huangzhou
 2D Ising model simulation
 """
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import random, mat, cos
@@ -15,7 +17,7 @@ class twoDIsing():
                   # note that X Y are on commen sense which equles the matrix element mat[x,y]
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
     _J = -1          # J = -1 ferromagnetizem J = 1 antiferromagnetizem
-    _MCTIME = 200       # total simulation times
+    _MCTIME = 100       # total simulation times
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
     _T = 0.1         # system temperature, unit Kelvin
@@ -195,7 +197,7 @@ def main():
     ax2.errorbar(x=x,y=magnetTensity,yerr=magnetTensityVar,fmt='o',ecolor='r',color='b')
     ax2.set_title('magnetic momentum evolution')
     '''
-
+    fig.savefig('./ising.png')
 
 if __name__ == '__main__':
     main()
