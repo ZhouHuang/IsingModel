@@ -12,12 +12,12 @@ from numpy import random, mat, cos
 
 class twoDIsing():
     # parameters definition
-    _XMAX = 8     # X coordinate
-    _YMAX = 8    # Y coordinate 
+    _XMAX = 10     # X coordinate
+    _YMAX = 10    # Y coordinate 
                   # note that X Y are on commen sense which equles the matrix element mat[x,y]
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
     __DISTRIBUTION = None # state distribution
-    _J = -1          # J = -1 ferromagnetizem J = 1 antiferromagnetizem
+    _J = 1          # J = 1 ferromagnetizem J = -1 antiferromagnetizem
     _MCTIME =5       # total simulation times
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
