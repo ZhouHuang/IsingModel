@@ -18,10 +18,10 @@ class twoDIsing():
     _STATE = [[]]     # site spin, pi is up, pi/2 is down
     __DISTRIBUTION = None # state distribution
     _J = 1          # J = 1 ferromagnetizem J = -1 antiferromagnetizem
-    _MCTIME =5       # total simulation times
+    _MCTIME =10       # total simulation times
     _MU = 1          # magnetic moment of the particle, borh magneton
     _H = 0           # magnetic field strength
-    _T = 0.00000001         # system temperature, unit Kelvin
+    _T = 1         # system temperature, unit Kelvin
     _KBOLTZMANN = 1  # boltzmann constant
     _ENERGY = 0      # system energy
     _ENERGYVAR = 0   # system energy variance
@@ -204,8 +204,10 @@ class twoDIsing():
             self._MAGINTENSITYVARARRAY.append(self._MAGINTENSITYVAR)
     
 def main():
-    #ising = twoDIsing(distribution='random',temperature=1)
-    ising = twoDIsing(temperature=0.01)
+    dis = 'random'
+    t = 10
+    ising = twoDIsing(distribution=dis,temperature=t)
+    #ising = twoDIsing(temperature=1)
     ising.visulizeSpin()
     ising.simulate()
     ising.visulizeSpin()
@@ -236,7 +238,14 @@ def main():
     ax2.errorbar(x=x,y=magnetTensity,yerr=magnetTensityVar,fmt='o',ecolor='r',color='b')
     ax2.set_title('magnetic momentum evolution')
     '''
-    fig.savefig('../results/ising.png')
+    fig.savefig('../results/ising_{}_{}.png'.format(dis,t))
+    
+    # data save
+    with open('../results/data_{}_{}.dat'.format(dis,t),'w') as f:
+        xi=0
+        while(xi<len(x)):
+            f.write(str(x[xi]) +'    ' + str(energy[xi]) + '    ' + str(magnetTensity[xi]) + '\n')
+            xi +=1
 
 if __name__ == '__main__':
     main()
